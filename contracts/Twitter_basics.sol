@@ -12,7 +12,11 @@ contract Twitter {
         uint256 timestamp;
         uint256 likes;
     }
+    address owner;
 
+    constructor() {
+        owner = msg.sender;
+    }
     // Mapping from address to user data
     mapping(address => Tweet[]) public tweets_map;
 
@@ -30,7 +34,7 @@ contract Twitter {
     // }
 
     function creatTweets(string memory _tweet )public {
-        require(bytes(_tweet).length <= tweet_char_limit, "You can not have tweet more that 280 charecters" );
+        require(bytes(_tweet).length <= tweet_char_limit, " Please Enter message less than 280 char");
         address _owner = msg.sender;
         Tweet memory tweet_data ;
         tweet_data.auther = msg.sender;
@@ -52,16 +56,28 @@ contract Twitter {
         return tweets_map[_owner]; // Return the tweets array
     }
 
-    modifier ownerOnly(uint256 _index){
+    modifier ownerOnlyChange(uint256 _index){
         require(msg.sender == tweets_map[msg.sender][_index].auther, "You are not the auther you can not change the content");
         _;
     }
 
-    function editTweet(uint256 _index, string memory new_str) public ownerOnly(_index){
+    modifier onlyOwner(){
+        require(msg.sender == owner, "You are not the owner" );
+        _;
+    }
+
+    function changeTweetMaxLength(uint16 _len) public onlyOwner{
+        tweet_char_limit = _len;
+    }
+
+
+   
+
+    function editTweet(uint256 _index, string memory new_str) public ownerOnlyChange(_index){
          tweets_map[msg.sender][_index].tweet = new_str; 
     }
 
-    function transferTweet(address _reciver, uint256 _tweet_index) public ownerOnly(_tweet_index){
+    function transferTweet(address _reciver, uint256 _tweet_index) public ownerOnlyChange(_tweet_index){
         Tweet storage  data = tweets_map[msg.sender][_tweet_index]; 
         data.auther = _reciver;
     }
